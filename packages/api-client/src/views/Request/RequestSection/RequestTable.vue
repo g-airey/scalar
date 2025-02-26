@@ -12,7 +12,7 @@ import DataTableCheckbox from '@/components/DataTable/DataTableCheckbox.vue'
 import DataTableRow from '@/components/DataTable/DataTableRow.vue'
 import type { EnvVariable } from '@/store/active-entities'
 
-import { hasItemProperties, parameterIsInvalid } from '../libs/request'
+import { hasItemProperties, parameterIsInvalid } from '@/libs/request'
 import RequestTableTooltip from './RequestTableTooltip.vue'
 
 const props = withDefaults(
