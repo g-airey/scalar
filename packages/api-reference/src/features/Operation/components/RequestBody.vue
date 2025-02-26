@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { ScalarMarkdown } from '@scalar/components'
+import type { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from '@scalar/openapi-types'
 import type { ContentType, RequestBody } from '@scalar/types/legacy'
 import { computed, ref } from 'vue'
 
 import { Schema } from '@/components/Content/Schema'
 
-const { requestBody } = defineProps<{ requestBody?: RequestBody }>()
+import ContentTypeSelect from './ContentTypeSelect.vue'
+
+const { schemas, requestBody } = defineProps<{
+  schemas?:
+    | OpenAPIV2.DefinitionsObject
+    | Record<string, OpenAPIV3.SchemaObject>
+    | Record<string, OpenAPIV3_1.SchemaObject>
+    | unknown
+  requestBody?: RequestBody
+}>()
 
 const availableContentTypes = computed(() =>
   Object.keys(requestBody?.content ?? {}),
@@ -23,28 +32,12 @@ if (requestBody?.content) {
   <div v-if="requestBody">
     <div class="request-body-title">
       <slot name="title" />
-      <div
-        class="request-body-title-select"
-        :class="{
-          'request-body-title-no-select': availableContentTypes.length <= 1,
-        }">
-        <span>{{ selectedContentType }}</span>
-        <select
-          v-if="requestBody && availableContentTypes.length > 1"
-          v-model="selectedContentType">
-          <option
-            v-for="(_, key) in requestBody?.content"
-            :key="key"
-            :value="key">
-            {{ key }}
-          </option>
-        </select>
-      </div>
-      <div
-        v-if="requestBody.description"
-        class="request-body-description">
-        <ScalarMarkdown :value="requestBody.description" />
-      </div>
+      <ContentTypeSelect
+        :defaultValue="selectedContentType"
+        :requestBody="requestBody"
+        @selectContentType="
+          ({ contentType }) => (selectedContentType = contentType)
+        " />
     </div>
     <div
       v-if="requestBody.content?.[selectedContentType]"
@@ -52,7 +45,8 @@ if (requestBody?.content) {
       <Schema
         compact
         noncollapsible
-        :value="requestBody.content?.[selectedContentType]?.schema" />
+        :value="requestBody.content?.[selectedContentType]?.schema"
+        :schemas="schemas" />
     </div>
   </div>
 </template>
@@ -64,7 +58,6 @@ if (requestBody?.content) {
   font-size: var(--scalar-font-size-2);
   font-weight: var(--scalar-semibold);
   color: var(--scalar-color-1);
-  line-height: 1.45;
   margin-top: 24px;
   padding-bottom: 12px;
   border-bottom: var(--scalar-border-width) solid var(--scalar-border-color);
